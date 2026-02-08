@@ -20,6 +20,30 @@ def draw_people(count, x_start, y, color):
         pygame.draw.circle(screen, color, (x, y), 15)
         x += 40
 
+class Person:
+    def __init__(self, kind, x, y):
+        self.kind = kind  # "M" or "C"
+        self.rect = pygame.Rect(x - 15, y - 15, 30, 30)
+
+    def draw(self, screen):
+        color = (255, 255, 255) if self.kind == "M" else (200, 0, 0)
+        pygame.draw.circle(screen, color, self.rect.center, 15)
+
+people_left = []
+people_right = []
+
+# create 3 missionaries
+for i in range(3):
+    people_left.append(Person("M", 60 + i * 40, 130))
+
+# create 3 cannibals
+for i in range(3):
+    people_left.append(Person("C", 60 + i * 40, 180))
+
+boat_rect = pygame.Rect(375, 300, 150, 40)
+boat_side = "left"
+
+
 running = True
 while running:
     clock.tick(60)
@@ -27,11 +51,26 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_pos = pygame.mouse.get_pos()
+
+            if boat_rect.collidepoint(mouse_pos):
+                if boat_side == "left":
+                    boat_rect.x = 375   # right side of river
+                    boat_side = "right"
+                else:
+                    boat_rect.x = 375 - 225  # left side of river
+                    boat_side = "left"
+
 
     # Left bank
     pygame.draw.rect(screen, (34, 139, 34), (0, 0, 300, 500))
     # River
     pygame.draw.rect(screen, (30, 144, 255), (300, 0, 300, 500))
+
+    pygame.draw.rect(screen, (139, 69, 19), boat_rect, border_radius=10)
+
     # Right bank
     pygame.draw.rect(screen, (34, 139, 34), (600, 0, 300, 500))
 
@@ -41,15 +80,13 @@ while running:
     screen.blit(left_text, (80, 20))
     screen.blit(right_text, (680, 20))
 
-    # Counts
-    screen.blit(font.render(f"M: {left['M']}  C: {left['C']}", True, (255,255,255)), (60, 60))
-    screen.blit(font.render(f"M: {right['M']}  C: {right['C']}", True, (255,255,255)), (660, 60))
+    # draw people (object-based)
+    for p in people_left:
+        p.draw(screen)
 
-    # People
-    draw_people(left["M"], 60, 130, (255,255,255))   # missionaries
-    draw_people(left["C"], 60, 180, (200,0,0))       # cannibals
-    draw_people(right["M"], 660, 130, (255,255,255))
-    draw_people(right["C"], 660, 180, (200,0,0))
+    for p in people_right:
+        p.draw(screen)
+
 
     pygame.display.flip()
 
