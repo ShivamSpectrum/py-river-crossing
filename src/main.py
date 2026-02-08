@@ -20,6 +20,14 @@ def draw_people(count, x_start, y, color):
         pygame.draw.circle(screen, color, (x, y), 15)
         x += 40
 
+def update_people_on_boat_positions():
+    for i, person in enumerate(people_on_boat):
+        person.rect.center = (
+            boat_rect.centerx - 20 + i * 40,
+            boat_rect.centery
+        )
+
+
 class Person:
     def __init__(self, kind, x, y):
         self.kind = kind  # "M" or "C"
@@ -31,6 +39,7 @@ class Person:
 
 people_left = []
 people_right = []
+people_on_boat = []
 
 # create 3 missionaries
 for i in range(3):
@@ -62,6 +71,17 @@ while running:
                 else:
                     boat_rect.x = 375 - 225  # left side of river
                     boat_side = "left"
+            
+            # click on people on the left bank
+            for person in people_left[:]:
+                if person.rect.collidepoint(mouse_pos):
+                    if boat_side == "left" and len(people_on_boat) < 2:
+                        people_left.remove(person)
+                        people_on_boat.append(person)
+
+                        idx = len(people_on_boat) - 1
+                        
+                        break
 
 
     # Left bank
@@ -70,6 +90,12 @@ while running:
     pygame.draw.rect(screen, (30, 144, 255), (300, 0, 300, 500))
 
     pygame.draw.rect(screen, (139, 69, 19), boat_rect, border_radius=10)
+
+    update_people_on_boat_positions()
+
+    for p in people_on_boat:
+        p.draw(screen)
+
 
     # Right bank
     pygame.draw.rect(screen, (34, 139, 34), (600, 0, 300, 500))
